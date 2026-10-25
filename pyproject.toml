@@ -18,6 +18,9 @@ testpaths = ["tests"]
 pythonpath = ["src"]
 addopts = "-ra --strict-markers"
 asyncio_mode = "auto"
+markers = [
+    "integration: integration tests"
+]
 
 [tool.coverage.run]
 branch = true
