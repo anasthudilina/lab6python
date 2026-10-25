@@ -2,7 +2,7 @@ import pytest
 from unittest.mock import Mock, AsyncMock
 from bank_app.models import Account
 from bank_app.repositories import InMemoryAccountRepository
-from bank_app.services import BankService, AsyncBankService
+from bank_app.services import BankService, AsyncBankService, Notifier
 
 @pytest.fixture
 def valid_account() -> Account:
@@ -21,7 +21,8 @@ def repository(valid_account, second_account) -> InMemoryAccountRepository:
 
 @pytest.fixture
 def mock_notifier() -> Mock:
-    return Mock()
+    # ДОДАНО spec=Notifier
+    return Mock(spec=Notifier) 
 
 @pytest.fixture
 def bank_service(repository, mock_notifier) -> BankService:

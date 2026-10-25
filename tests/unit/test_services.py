@@ -1,9 +1,8 @@
 import pytest
-from unittest.mock import Mock, AsyncMock
+from unittest.mock import Mock, AsyncMock, MagicMock, patch
 from bank_app.exceptions import ValidationError
 from bank_app.services import AsyncBankService, BankService
 from bank_app.models import Account
-
 
 def test_create_account_interaction(bank_service, valid_account, mock_notifier):
     bank_service.create_account(valid_account)
@@ -26,6 +25,7 @@ def test_notifier_failure_path(bank_service, valid_account, mock_notifier):
     
     with pytest.raises(ConnectionError):
         bank_service.create_account(valid_account)
+
 def test_service_uses_repository_return_value(mock_notifier):
     repo = Mock()
     # Налаштовуємо return_value для Mock
@@ -37,6 +37,20 @@ def test_service_uses_repository_return_value(mock_notifier):
     assert acc.client == "Alice"
     assert acc.balance == 100.0
 
+def test_service_uses_magic_mock(valid_account):
+    # Використання MagicMock
+    magic_repo = MagicMock()
+    magic_repo.get.return_value = valid_account
+    
+    assert magic_repo.get("UA001").client == "Alice"
+
+@patch('bank_app.services.BankService.create_account')
+def test_patch_decorator(mock_create):
+    # Демонстрація роботи декоратора @patch
+    mock_create.return_value = None
+    assert mock_create() is None
+    mock_create.assert_called_once()
+    
 @pytest.mark.asyncio
 async def test_async_notifier():
     mock_async_notifier = AsyncMock()
@@ -45,4 +59,3 @@ async def test_async_notifier():
     await service.notify_client("Test message")
     
     mock_async_notifier.notify.assert_awaited_once_with("Test message")
-
