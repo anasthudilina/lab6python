@@ -39,3 +39,16 @@ def test_export_pipeline_failure(tmp_path):
     # Додаємо PermissionError для сумісності з Windows
     with pytest.raises((IsADirectoryError, PermissionError)):
         export_to_json([], invalid_path)
+
+def test_config_and_export_integration(tmp_path, monkeypatch):
+    # Перевіряємо, як конфігурація та експорт працюють разом
+    monkeypatch.setenv("ALLOWED_CURRENCY", "USD")
+    from bank_app.config import get_allowed_currency
+    assert get_allowed_currency() == "USD"
+    
+    acc = Account("UA1", "Alice", 100.0, currency="USD")
+    out = tmp_path / "test_config.json"
+    export_to_json([acc], out)
+    
+    assert out.exists()
+    assert "USD" in out.read_text(encoding="utf-8")

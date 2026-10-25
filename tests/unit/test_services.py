@@ -1,7 +1,9 @@
 import pytest
 from unittest.mock import Mock, AsyncMock
 from bank_app.exceptions import ValidationError
-from bank_app.services import AsyncBankService
+from bank_app.services import AsyncBankService, BankService
+from bank_app.models import Account
+
 
 def test_create_account_interaction(bank_service, valid_account, mock_notifier):
     bank_service.create_account(valid_account)
@@ -24,6 +26,16 @@ def test_notifier_failure_path(bank_service, valid_account, mock_notifier):
     
     with pytest.raises(ConnectionError):
         bank_service.create_account(valid_account)
+def test_service_uses_repository_return_value(mock_notifier):
+    repo = Mock()
+    # Налаштовуємо return_value для Mock
+    repo.get.return_value = Account("UA1", "Alice", 100.0)
+    
+    service = BankService(repo, mock_notifier)
+    acc = repo.get("UA1")
+    
+    assert acc.client == "Alice"
+    assert acc.balance == 100.0
 
 @pytest.mark.asyncio
 async def test_async_notifier():
@@ -33,3 +45,4 @@ async def test_async_notifier():
     await service.notify_client("Test message")
     
     mock_async_notifier.notify.assert_awaited_once_with("Test message")
+
